@@ -1,7 +1,7 @@
 "use server";
 
+import { createLastBlock } from "@/app/api/block/createLastBlock";
 import { getLastBlocks } from "@/app/api/block/getLastBlocks";
-import { createLastBlock } from "@/app/api/cron/route";
 import { actionClient } from "@/lib/safe-action";
 
 export const getBlockListAction = actionClient.action(async () => {
