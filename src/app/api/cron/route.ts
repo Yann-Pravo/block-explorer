@@ -32,7 +32,7 @@ export async function GET() {
         return NextResponse.json(newBlock);
       }
     } else {
-      return new Error();
+      throw new Error();
     }
   } catch {
     return NextResponse.json(
