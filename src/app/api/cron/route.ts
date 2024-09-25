@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getLastBlockFromInfura } from "../block/getLastBlockFromInfura";
 import prisma from "@/lib/prisma";
 
-export async function GET() {
+export async function createLastBlock() {
   try {
     const response = await getLastBlockFromInfura();
     const lastBlock = await response.json();
@@ -36,8 +36,12 @@ export async function GET() {
     }
   } catch {
     return NextResponse.json(
-      { error: "Failed to fetch last block" },
+      { error: "Failed to create last block" },
       { status: 500 }
     );
   }
+}
+
+export async function GET() {
+  return await createLastBlock();
 }

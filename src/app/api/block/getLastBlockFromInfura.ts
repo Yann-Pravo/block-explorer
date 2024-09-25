@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function getLastBlockFromInfura() {
   try {
     const reponse = await fetch(
-      `https://mainnet.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      `https://holesky.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_API_KEY}`,
       {
         method: "POST",
         headers: {
@@ -15,6 +15,7 @@ export async function getLastBlockFromInfura() {
           params: ["latest", false],
           id: 1,
         }),
+        cache: "no-store",
       }
     );
 
@@ -22,7 +23,7 @@ export async function getLastBlockFromInfura() {
     return NextResponse.json(lastBlock);
   } catch {
     return NextResponse.json(
-      { error: "Failed to fetch blocks" },
+      { error: "Failed to fetch last block from Infura" },
       { status: 500 }
     );
   }

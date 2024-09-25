@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 export async function getLastBlocks() {
   try {
     const blocks = await prisma.block.findMany({
-      take: 10,
       select: {
         id: true,
         size: true,
@@ -13,6 +12,9 @@ export async function getLastBlocks() {
         nonce: true,
         gasLimit: true,
         hash: true,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
