@@ -1,5 +1,5 @@
-import prisma from '@/lib/prisma'
-import { NextResponse } from 'next/server'
+import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
 export async function getLastBlocks() {
   try {
@@ -13,12 +13,14 @@ export async function getLastBlocks() {
         nonce: true,
         gasLimit: true,
         hash: true,
-      }
+      },
     });
 
-    return NextResponse.json({ blocks })
+    return NextResponse.json(blocks);
   } catch {
-    return NextResponse.json({ error: 'Failed to fetch blocks' }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch blocks" },
+      { status: 500 }
+    );
   }
 }
- 

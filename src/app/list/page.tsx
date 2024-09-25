@@ -1,3 +1,8 @@
+import { getLastBlocks } from "../api/block/getLastBlocks";
+
 export default async function RoutePage() {
-  return <div>hello</div>;
+  const res = await getLastBlocks();
+  const lastBlocks = await res.json();
+
+  return <div>nb blocks: {lastBlocks.length}</div>;
 }
