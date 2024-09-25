@@ -1,12 +1,17 @@
 "use client";
 
 import { Block } from "@prisma/client";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useOptimistic,
+  useRef,
+  useState,
+} from "react";
 import { getBlockListAction } from "./get-block-list.action";
-
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
+import { deleteBlockListAction } from "./delete-block-list.action";
+import { cn } from "@/lib/utils";
+import { format, fromUnixTime } from "date-fns";
 
 type ListProps = {
   items: Block[];
@@ -14,10 +19,15 @@ type ListProps = {
 
 export const List = ({ items }: ListProps) => {
   const checkbox = useRef<HTMLInputElement>(null);
-  const [blocks, setBlocks] = useState(items);
+  const [blocks, setBlocks] = useOptimistic(items);
+  const [isLoading, setIsLoading] = useState(false);
   const [checked, setChecked] = useState(false);
   const [indeterminate, setIndeterminate] = useState(false);
   const [selectedBlocks, setSelectedBlocks] = useState<string[]>([]);
+  const [formatSize, setFormatSize] = useState(false);
+  const [formatNumber, setFormatNumber] = useState(false);
+  const [formatGasLimit, setFormatGasLimit] = useState(false);
+  const [formatTime, setFormatTime] = useState(false);
 
   useLayoutEffect(() => {
     const isIndeterminate =
@@ -37,6 +47,16 @@ export const List = ({ items }: ListProps) => {
     setIndeterminate(false);
   }
 
+  const deleteBlocks = async () => {
+    setIsLoading(true);
+    await deleteBlockListAction({ ids: selectedBlocks });
+    setBlocks(blocks.filter((block) => !selectedBlocks.includes(block.id)));
+    setChecked(false);
+    setIndeterminate(false);
+    setSelectedBlocks([]);
+    setIsLoading(false);
+  };
+
   const refetchBlocks = async () => {
     const res = await getBlockListAction();
     if (res?.data) {
@@ -47,7 +67,7 @@ export const List = ({ items }: ListProps) => {
   useEffect(() => {
     const interval = setInterval(() => {
       refetchBlocks();
-    }, 60000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, []);
@@ -71,10 +91,14 @@ export const List = ({ items }: ListProps) => {
               {selectedBlocks.length > 0 && (
                 <div className="absolute left-14 top-0 flex h-12 items-center sm:left-12">
                   <button
+                    onClick={deleteBlocks}
                     type="button"
-                    className="inline-flex items-center rounded bg-white px-2 py-1 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-white"
+                    className={cn(
+                      "inline-flex items-center rounded bg-white px-2 py-1 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:bg-white",
+                      { disabled: isLoading }
+                    )}
                   >
-                    Delete all
+                    {isLoading ? "Deleting..." : "Delete"}
                   </button>
                 </div>
               )}
@@ -98,19 +122,22 @@ export const List = ({ items }: ListProps) => {
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-blue-600 hover:cursor-pointer"
+                      onClick={() => setFormatSize(!formatSize)}
                     >
                       Size
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-blue-600 hover:cursor-pointer"
+                      onClick={() => setFormatNumber(!formatNumber)}
                     >
                       Number
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-blue-600 hover:cursor-pointer"
+                      onClick={() => setFormatTime(!formatTime)}
                     >
                       Timestamp
                     </th>
@@ -122,7 +149,8 @@ export const List = ({ items }: ListProps) => {
                     </th>
                     <th
                       scope="col"
-                      className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900"
+                      className="px-3 py-3.5 text-left text-sm font-semibold text-blue-600 hover:cursor-pointer"
+                      onClick={() => setFormatGasLimit(!formatGasLimit)}
                     >
                       Gas limit
                     </th>
@@ -157,7 +185,7 @@ export const List = ({ items }: ListProps) => {
                         />
                       </td>
                       <td
-                        className={classNames(
+                        className={cn(
                           "whitespace-nowrap py-4 pr-3 text-sm font-medium",
                           selectedBlocks.includes(block.id)
                             ? "text-indigo-600"
@@ -167,19 +195,26 @@ export const List = ({ items }: ListProps) => {
                         {block.hash}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {block.size}
+                        {formatSize ? parseInt(block.size) : block.size}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {block.number}
+                        {formatNumber ? parseInt(block.number) : block.number}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {block.timestamp}
+                        {formatTime
+                          ? format(
+                              fromUnixTime(parseInt(block.timestamp)),
+                              "dd/MM/yyyy k:mm"
+                            )
+                          : block.timestamp}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                         {block.nonce}
                       </td>
                       <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {block.gasLimit}
+                        {formatGasLimit
+                          ? parseInt(block.gasLimit)
+                          : block.gasLimit}
                       </td>
                     </tr>
                   ))}
@@ -190,38 +225,5 @@ export const List = ({ items }: ListProps) => {
         </div>
       </div>
     </div>
-    // <ul
-    //   role="list"
-    //   className="divide-y divide-gray-200 bg-white overflow-auto max-h-full"
-    // >
-    //   {blocks.map((block: Block) => (
-    //     <li key={block.id} className="px-4 py-4 sm:px-6">
-    //       <div>
-    //         <span className="text-stone-400">Size:</span>{" "}
-    //         <span className="">{block.size}</span>
-    //       </div>
-    //       <div>
-    //         <span className="text-stone-400">Number:</span>{" "}
-    //         <span className="">{block.number}</span>
-    //       </div>
-    //       <div>
-    //         <span className="text-stone-400">Timestamp:</span>{" "}
-    //         <span className="">{block.timestamp}</span>
-    //       </div>
-    //       <div>
-    //         <span className="text-stone-400">Nonce:</span>{" "}
-    //         <span className="">{block.nonce}</span>
-    //       </div>
-    //       <div>
-    //         <span className="text-stone-400">GasLimit:</span>{" "}
-    //         <span className="">{block.gasLimit}</span>
-    //       </div>
-    //       <div>
-    //         <span className="text-stone-400">Hash:</span>{" "}
-    //         <span className="">{block.hash}</span>
-    //       </div>
-    //     </li>
-    //   ))}
-    // </ul>
   );
 };

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function getLastBlockFromInfura() {
   try {
     const reponse = await fetch(
-      `https://holesky.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_API_KEY}`,
+      `https://mainnet.infura.io/v3/${process.env.NEXT_PUBLIC_INFURA_API_KEY}`,
       {
         method: "POST",
         headers: {
