@@ -34,7 +34,7 @@ export async function createLastBlock() {
     } else {
       throw new Error();
     }
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to create last block" },
       { status: 500 }
