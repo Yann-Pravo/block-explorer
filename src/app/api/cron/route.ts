@@ -36,7 +36,7 @@ export async function GET() {
     }
   } catch {
     return NextResponse.json(
-      { error: "Failed to fetch blocks" },
+      { error: "Failed to fetch last block" },
       { status: 500 }
     );
   }
