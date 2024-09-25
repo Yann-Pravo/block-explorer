@@ -1,13 +1,7 @@
 "use client";
 
 import { Block } from "@prisma/client";
-import {
-  useEffect,
-  useLayoutEffect,
-  useOptimistic,
-  useRef,
-  useState,
-} from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { getBlockListAction } from "./get-block-list.action";
 import { deleteBlockListAction } from "./delete-block-list.action";
 import { cn } from "@/lib/utils";
@@ -19,7 +13,7 @@ type ListProps = {
 
 export const List = ({ items }: ListProps) => {
   const checkbox = useRef<HTMLInputElement>(null);
-  const [blocks, setBlocks] = useOptimistic(items);
+  const [blocks, setBlocks] = useState(items);
   const [isLoading, setIsLoading] = useState(false);
   const [checked, setChecked] = useState(false);
   const [indeterminate, setIndeterminate] = useState(false);
@@ -80,7 +74,7 @@ export const List = ({ items }: ListProps) => {
             Blocks
           </h1>
           <p className="mt-2 text-sm text-gray-700">
-            A list of all the blocks from Ethereum Holesky network
+            A list of blocks from Ethereum Holesky network from Infura api
           </p>
         </div>
       </div>
